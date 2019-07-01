@@ -34,26 +34,93 @@
 					<ul>
 						<li>"Offically" technical lead at Kablamo</li>
 						<li>I call myself a code monkey</li>
+						<li>
+							<pre><code style="font-size: 16px;">func produce(c Coffee, b Beer) (Code, Cloud, error)</code></pre>
+						</li>
 					</ul>
 
-					<p>https://boyter.org/</p>
-
+					<p>I blog <a href="https://boyter.org/">boyter.org</a> I free software <a href="https://github/boyter/">github/boyter/</a> I run <a href="https://searchcode.com/">searchcode.com</a> also on the twitter <a href="https://twitter.com/boyter">@boyter</a></p>
 				</section>
 
 				<section>
-					<h2>Uses? Helps with,</h2>
+					<h2>The Problem</h2>
 					<ul>
-						<li>Budgeting</li>
-						<li>Testing</li>
-						<li>Scheduling</li>
-						<li><u>Estimation</u></li>
+						<li>250,000 audio and video files starting in 1920's stored in digitised system.</li>
+						<li>Video stored in proprietary format.</li>
+						<li>Images in some other system.</li>
+						<li>System was full. No ability to archive new content.</li>
+						<li>Metadata was still being added.</li>
+						<li>Many systems for metadata. Some 36+ years old.</li>
 					</ul>
 				</section>
 
+				<section>
+					<h2>The Goal</h2>
+					<ul>
+						<li>Search across everything.</li>
+						<li>Have a "future resistant" archive.</li>
+						<li>Merge metadata into golden records.</li>
+						<li>Self serve.</li>
+						<li>Turn off old services.</li>
+						<li>Have production ready in 6 months.</li>
+					</ul>
+				</section>
 
 				<section>
-					<h2>How Fast?</h2>
-					<img src="./img/2.png" style="border: none;" />
+					<h2>Design</h2>
+					<ul>
+						<li>S3 all the things.</li>
+						<li>Elastic search.</li>
+						<li>Go.</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>AWS Elastic Search</h2>
+					<p>It's not brilliant.</p>
+					<ul>
+						<li>Choice of instance types limited.</li>
+						<li>No scaling or monitoring work done for you.</li>
+						<li>Forces you to snapshot even if you use it as a cache/search only solution.</li>
+						<li>Multi AZ limited.</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Architecture</h2>
+					<img src="./img/1.png" style="border: none; height: 500px;" />
+				</section>
+
+				<section>
+					<h2>GoPath/Monorepo FTW</h2>
+					<pre><code style="font-size: 16px;">.
+├── assets
+│   ├── imageproxy
+│   │   └── main.go
+│   ├── load
+│   │   └── main.go
+│   ├── merge
+│   │   ├── audio
+│   │   │   └── main.go
+│   │   ├── bulk
+│   │   │   └── main.go
+│   │   ├── cleanup
+│   │   │   └── main.go
+│   │   ├── oldvideo
+│   │   │   └── main.go
+│   │   ├── photo
+│   │   │   └── main.go
+│   │   ├── video
+│   │   │   └── main.go
+│   │   └── wvideo
+│   │       └── main.go
+│   ├── transcodeFinished
+│   │   └── commandline
+│   │       └── main.go
+│   └── transcodeStart
+│       └── commandline
+│           └── main.go
+					</code></pre>
 				</section>
 
 
