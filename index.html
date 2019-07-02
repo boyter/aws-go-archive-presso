@@ -31,64 +31,135 @@
 
 				<section>
 					<h2>Who are you?</h2>
-					<ul>
-						<li>"Offically" technical lead at Kablamo</li>
-						<li>I call myself a code monkey</li>
-						<li>
-							<pre><code style="font-size: 16px;">func produce(c Coffee, b Beer) (Code, Cloud, error)</code></pre>
-						</li>
-					</ul>
+					<p>
+					"Officially" technical lead at Kablamo. In reality a code monkey.
+					
+					<pre><code style="font-size: 16px;">func produce(c Coffee, b Beer) (Code, Cloud, error)</code></pre>
+					<p>
 
 					<p>I blog <a href="https://boyter.org/">boyter.org</a> I free software <a href="https://github/boyter/">github/boyter/</a> I run <a href="https://searchcode.com/">searchcode.com</a> also on the twitter <a href="https://twitter.com/boyter">@boyter</a></p>
 				</section>
 
 				<section>
-					<h2>The Problem</h2>
+					<h2>Problem/Opportunity</h2>
 					<ul>
-						<li>250,000 audio and video files starting in 1920's stored in digitised system.</li>
+						<li>250,000 audio and video files starting in 1920's stored in digitised system</li>
 						<li>Video stored in proprietary format.</li>
-						<li>Images in some other system.</li>
-						<li>System was full. No ability to archive new content.</li>
-						<li>Metadata was still being added.</li>
+						<li>System was full. No ability to archive new content</li>
+						<li>Metadata was still being added</li>
 						<li>Many systems for metadata. Some 36+ years old.</li>
+						<li>2 week turnaround for content.</li>
 					</ul>
 				</section>
 
 				<section>
 					<h2>The Goal</h2>
 					<ul>
-						<li>Search across everything.</li>
+						<li>Search across everything</li>
 						<li>Have a "future resistant" archive.</li>
-						<li>Merge metadata into golden records.</li>
+						<li>Merge metadata into golden records</li>
 						<li>Self serve.</li>
-						<li>Turn off old services.</li>
-						<li>Have production ready in 6 months.</li>
+						<li>Turn off old services</li>
+						<li>Be production ready in 6 months</li>
 					</ul>
 				</section>
 
 				<section>
-					<h2>Design</h2>
+					<h2>Tools</h2>
 					<ul>
+						<li>AWS (naturally)</li>
 						<li>S3 all the things.</li>
-						<li>Elastic search.</li>
-						<li>Go.</li>
-					</ul>
-				</section>
-
-				<section>
-					<h2>AWS Elastic Search</h2>
-					<p>It's not brilliant.</p>
-					<ul>
-						<li>Choice of instance types limited.</li>
-						<li>No scaling or monitoring work done for you.</li>
-						<li>Forces you to snapshot even if you use it as a cache/search only solution.</li>
-						<li>Multi AZ limited.</li>
+						<li>Elastic search</li>
+						<li>React/Typescript</li>
+						<li>No choice of language. Go.</li>
+						<li>O365 for Authentication.</li>
+						<li>RDS.</li>
 					</ul>
 				</section>
 
 				<section>
 					<h2>Architecture</h2>
 					<img src="./img/1.png" style="border: none; height: 500px;" />
+				</section>
+
+				<section>
+					<h2>Choices</h2>
+					<ul>
+						<li>3 AZ ECS cluster</li>
+						<li>2 R type instances per AZ</li>
+						<li>Elastic search as searchable cache.</li>
+						<li>SQS. Step functions.</li>
+						<li>RDS.</li>
+						<li>Public/Private?</li>
+						<li>V4 Signed Upload</li>
+						<li>Landing Bucket.</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Landing</h2>
+					<p>Retention policy on landing.</p>
+					<img src="./img/4.png" style="border: none; height: 500px;" />
+				</section>
+
+				<section>
+					<h2>AWS Elastic Search?</h2>
+					<p>It's not brilliant</p>
+					<ul>
+						<li>Choice of instance types limited</li>
+						<li>No scaling or monitoring work done for you</li>
+						<li>Forces you to snapshot even if you use it as a cache/search only solution!!</li>
+						<li>Multi AZ limited</li>
+						<li>Tended to have issues under load.</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Why Elastic search?</h2>
+					<ul>
+						<li>Query syntax <code>"sydney~1 -sydney"</code></li>
+						<li>Performance</li>
+						<li>Power users requested VERY complex queries</li>
+						<li>Resilience</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Elastic Search Issues</h2>
+					<p>Main one. Queries across fields.</p>
+<pre><code style="font-size: 16px;">
+{
+  "query_string": {
+    "default_operator": "AND",
+    "fields": [
+      "person.name",
+      "fact",
+      "person.citizenship"
+    ],
+    "query": "keanu canada"
+  }
+}
+</code></pre>
+				<p>Also library support in Go is not great. Stemming.</p>
+				</section>
+
+				<section>
+					<h2>Resilient Design.</h2>
+
+					<p>Gracefully degrade.</p>
+					<dl>
+						<dt>S3</dt>
+						<dd>Unable to add/edit records or download/view</dd>
+						<dt>SQS</dt>
+						<dd>Unable to add/edit records with new media</dd>
+						<dt>Elastic Search</dt>
+						<dd>Unable to search</dd>
+						<dt>RDS</dt>
+						<dd>Unable to view/edit/delete collections</dd>
+					</dl>
+
+					<p>Catch! Hides errors! Delete/Transcode</p>
+
 				</section>
 
 				<section>
@@ -121,6 +192,123 @@
 │       └── commandline
 │           └── main.go
 					</code></pre>
+				</section>
+
+				<section>
+					<h2>Background Jobs</h2>
+					<ul>
+						<li>Load.</li>
+						<li>Merge.</li>
+						<li>Transcode Start/End.</li>
+						<li>Image Resize</li>
+						<li>Many one off jobs</li>
+						<li>Lambda?</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Go for S3 copy</h2>
+					<p>Excellent with SQS support</p>
+<pre><code style="font-size: 16px;">
+for _, sqsmsg := range messages.Messages {
+	// We don't want to wait for these to finish anymore but let them run in the background
+	// and finish whenever they are done and naturally exit. As such no need for a waitgroup
+	// here anymore
+	go func(sqsmsg *sqs.Message) {
+</code></pre>
+				</section>
+
+				<section>
+					<h2>Go Image Resizing</h2>
+					<ul>
+						<li>Don't do it at runtime</li>
+						<li>Too slow!</li>
+						<li>With watermarking.</li>
+						<li>Moved to pre-generating and caching.</li>
+						<li>API passes images though.</li>
+						<li>So we can log.</li>
+						<li>Thumbor is pretty good</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Clipping</h2>
+					<img src="./img/2.png" style="border: none;" />
+					<ul>
+						<li>mediainfo, ffmpeg (mxf, mov, mp4)</li>
+						<li>Disk caching/issue.</li>
+						<li><a href="https://boyter.org/posts/media-clipping-using-ffmpeg-with-cache-eviction-2-random-for-disk-caching-at-scale/">2 random eviction (woo!)</a></li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Clipping In Action</h2>
+					<p>Network bound. T3 burstable network really helps!!</p>
+					<img src="./img/3.png" style="border: none;" />
+				</section>
+
+				<section>
+					<h2>Really Helpful</h2>
+					<p>Have an endpoint that exposes <b>most</b> environment variables.</p>
+
+<pre><code style="font-size: 16px;">{
+  "environment": {
+    "AppEnvironment": "",
+    "AudioMasterBucket": "archives.master.audio",
+    "AudioProxyBucket": "archives.proxy.audio",
+    "AwsRegion": "ap-southeast-2",
+    "DownloadExpiryMinutes": 1440,
+    "ElasticEndpoint": "https://elastic-archives.content/",
+    "FrontendEndpoint": "https://archive.content",
+    "HttpTimeoutSeconds": 20,
+    "LandingBucket": "archives.landing",
+    "MetadataBucket": "archives.records.prod",
+    "PhotoBucket": "archives.photo",
+    "PhotoBucketProxy": "archives.proxy.photo",
+    "PortNumber": 8080,
+    "SystemEnvironment": "Archive",
+    "SystemEnvironmentDisplayName": "Archive",
+    "UploadExpiryMinutes": 1440,
+    "VideoMasterBucket": "archives.master.video",
+    "VideoProxyBucket": "archives.proxy.video"
+  }
+}</code></pre>
+
+				</section>
+
+				<section>
+					<h2>Results</h2>
+					<img src="./img/5.png" style="border: none;" />
+					<ul>
+						<li>Outages 0</li>
+						<li>976 audio master retrievals (428 in Jan)</li>
+						<li>4,008 video master retrievals (763 in May)</li>
+						<li>16,014 audio proxies played (3940 in May)</li>
+						<li>157,281 video proxies played (28,469 in May)</li>
+						<li>593,085 searches performed (~5000 a day)</li>
+					</ul>
+					<p>GA Jan. Culture change.</p>
+				</section>
+
+				<section>
+					<h2>Results 2</h2>
+
+					<ul>
+						<li>132 TB data though API (so far)</li>
+						<li>1 PB of video data in S3 / Glacier (growing!)</li>
+						<li>40 TB of audio data in S3</li>
+						<li>16,000 images (growing!)</li>
+						<li>~327 days of video watching</li>
+						<li>Word is spreading</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>What would we change?</h2>
+
+					<p>AWS Changes, Fargate, Private API-Gateway, Server-less Aurora, Bucket cleaning, Instance types R5</p>
+					<p>Taxonomy storage.</p>
+					<p>Probably more lambda as 15 min timeout</p>
 				</section>
 
 
