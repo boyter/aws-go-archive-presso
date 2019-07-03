@@ -86,12 +86,12 @@
 					<h2>Choices</h2>
 					<ul>
 						<li>3 AZ ECS cluster</li>
-						<li>2 R type instances per AZ</li>
-						<li>Elastic search as searchable cache.</li>
-						<li>SQS. Step functions.</li>
+						<li>2 R type instances per AZ.</li>
+						<li>Elastic search for search + cache.</li>
+						<li>SQS / Step functions.</li>
 						<li>RDS.</li>
 						<li>Public/Private?</li>
-						<li>V4 Signed Upload</li>
+						<li>V4 Signed Upload 500 GB files!</li>
 						<li>Landing Bucket.</li>
 					</ul>
 				</section>
@@ -100,6 +100,25 @@
 					<h2>Landing</h2>
 					<p>Retention policy on landing.</p>
 					<img src="./img/4.png" style="border: none; height: 500px;" />
+				</section>
+
+				<section>
+					<h2>Resilient Design.</h2>
+
+					<p>Gracefully degrade.</p>
+					<dl>
+						<dt>S3</dt>
+						<dd>Unable to add/edit records or download/view</dd>
+						<dt>SQS</dt>
+						<dd>Unable to add/edit records with new media</dd>
+						<dt>Elastic Search</dt>
+						<dd>Unable to search</dd>
+						<dt>RDS</dt>
+						<dd>Unable to view/edit/delete collections</dd>
+					</dl>
+
+					<p>Catch! Hides errors! Delete issue.</p>
+
 				</section>
 
 				<section>
@@ -117,7 +136,7 @@
 				<section>
 					<h2>Why Elastic search?</h2>
 					<ul>
-						<li>Query syntax <code>"sydney~1 -sydney"</code></li>
+						<li>Query syntax <code>"melbourne~1 -melbourne"</code></li>
 						<li>Performance</li>
 						<li>Power users requested VERY complex queries</li>
 						<li>Resilience</li>
@@ -140,30 +159,12 @@
   }
 }
 </code></pre>
-				<p>Also library support in Go is not great. Stemming.</p>
+				<p>Library support in Go not great. Stemming. Sorting. CPU bound.</p>
 				</section>
 
 				<section>
-					<h2>Resilient Design.</h2>
-
-					<p>Gracefully degrade.</p>
-					<dl>
-						<dt>S3</dt>
-						<dd>Unable to add/edit records or download/view</dd>
-						<dt>SQS</dt>
-						<dd>Unable to add/edit records with new media</dd>
-						<dt>Elastic Search</dt>
-						<dd>Unable to search</dd>
-						<dt>RDS</dt>
-						<dd>Unable to view/edit/delete collections</dd>
-					</dl>
-
-					<p>Catch! Hides errors! Delete/Transcode</p>
-
-				</section>
-
-				<section>
-					<h2>GoPath/Monorepo FTW</h2>
+					<h2>GOPATH + Monorepo</h2>
+					<p>Exploit GOPATH for multiple entry points into application.</p>
 					<pre><code style="font-size: 16px;">.
 ├── assets
 │   ├── imageproxy
@@ -197,18 +198,18 @@
 				<section>
 					<h2>Background Jobs</h2>
 					<ul>
-						<li>Load.</li>
-						<li>Merge.</li>
+						<li>Load. Taxonomy. Graceful degrade. Restore.</li>
+						<li>Merge's.</li>
 						<li>Transcode Start/End.</li>
-						<li>Image Resize</li>
-						<li>Many one off jobs</li>
+						<li>Image Resize, watermark.</li>
+						<li>Many one off jobs.</li>
 						<li>Lambda?</li>
 					</ul>
 				</section>
 
 				<section>
 					<h2>Go for S3 copy</h2>
-					<p>Excellent with SQS support</p>
+					<p>Excellent with SQS support. But have to code own multipart.</p>
 <pre><code style="font-size: 16px;">
 for _, sqsmsg := range messages.Messages {
 	// We don't want to wait for these to finish anymore but let them run in the background
@@ -222,11 +223,9 @@ for _, sqsmsg := range messages.Messages {
 					<h2>Go Image Resizing</h2>
 					<ul>
 						<li>Don't do it at runtime</li>
-						<li>Too slow!</li>
-						<li>With watermarking.</li>
-						<li>Moved to pre-generating and caching.</li>
-						<li>API passes images though.</li>
-						<li>So we can log.</li>
+						<li>Too slow! Watermarking.</li>
+						<li>Moved to pre-generating and storing.</li>
+						<li>API passes images though. Logging.</li>
 						<li>Thumbor is pretty good</li>
 					</ul>
 				</section>
@@ -238,6 +237,7 @@ for _, sqsmsg := range messages.Messages {
 						<li>mediainfo, ffmpeg (mxf, mov, mp4)</li>
 						<li>Disk caching/issue.</li>
 						<li><a href="https://boyter.org/posts/media-clipping-using-ffmpeg-with-cache-eviction-2-random-for-disk-caching-at-scale/">2 random eviction (woo!)</a></li>
+						<li>AWS Transcode?</li>
 					</ul>
 				</section>
 
@@ -253,7 +253,7 @@ for _, sqsmsg := range messages.Messages {
 
 <pre><code style="font-size: 16px;">{
   "environment": {
-    "AppEnvironment": "",
+    "AppEnvironment": "PROD",
     "AudioMasterBucket": "archives.master.audio",
     "AudioProxyBucket": "archives.proxy.audio",
     "AwsRegion": "ap-southeast-2",
@@ -277,40 +277,45 @@ for _, sqsmsg := range messages.Messages {
 				</section>
 
 				<section>
+					<h2>What would we change?</h2>
+
+					<p>AWS Changes, Fargate (CPU), Private API-Gateway, Server-less Aurora, Bucket cleaning, Instance types R5</p>
+					<p>Taxonomy storage.</p>
+					<p>Probably more lambda. 15 min timeout.</p>
+					<p>S3 key names. Maybe GORM. Proxy!</p>
+				</section>
+
+				<section>
 					<h2>Results</h2>
 					<img src="./img/5.png" style="border: none;" />
 					<ul>
-						<li>Outages 0</li>
-						<li>976 audio master retrievals (428 in Jan)</li>
-						<li>4,008 video master retrievals (763 in May)</li>
-						<li>16,014 audio proxies played (3940 in May)</li>
+						<li>Outages 0. Previously days/weeks.</li>
+						<li>976 audio master retrievals</li>
+						<li>4,008 video master retrievals. Glacier.</li>
+						<li>16,014 audio proxies played</li>
 						<li>157,281 video proxies played (28,469 in May)</li>
-						<li>593,085 searches performed (~5000 a day)</li>
+						<li>593,085 searches performed</li>
+						<li>Average search time ~100 ms</li>
 					</ul>
 					<p>GA Jan. Culture change.</p>
 				</section>
 
 				<section>
-					<h2>Results 2</h2>
+					<h2>Results Continued</h2>
 
 					<ul>
+						<li>3 months to production cut-over. Turn off.</li>
 						<li>132 TB data though API (so far)</li>
-						<li>1 PB of video data in S3 / Glacier (growing!)</li>
+						<li>1 PB of video data in S3 / Glacier</li>
 						<li>40 TB of audio data in S3</li>
-						<li>16,000 images (growing!)</li>
+						<li>16,000 images</li>
 						<li>~327 days of video watching</li>
-						<li>Word is spreading</li>
+						<li>Transcode overload.</li>
+						<li>Some joker... 700 GB videos in one hour.</li>
+						<li>Importing other systems.</li>
+						<li>On time + budget!</li>
 					</ul>
 				</section>
-
-				<section>
-					<h2>What would we change?</h2>
-
-					<p>AWS Changes, Fargate, Private API-Gateway, Server-less Aurora, Bucket cleaning, Instance types R5</p>
-					<p>Taxonomy storage.</p>
-					<p>Probably more lambda as 15 min timeout</p>
-				</section>
-
 
 			</div>
 		</div>
