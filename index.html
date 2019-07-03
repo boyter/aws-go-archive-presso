@@ -32,7 +32,7 @@
 				<section>
 					<h2>Who are you?</h2>
 					<p>
-					"Officially" technical lead at Kablamo. In reality a code monkey.
+					"Officially" technical lead at Kablamo read "code monkey".
 					
 					<pre><code style="font-size: 16px;">func produce(c Coffee, b Beer) (Code, Cloud, error)</code></pre>
 					<p>
@@ -41,13 +41,20 @@
 				</section>
 
 				<section>
-					<h2>Problem/Opportunity</h2>
+					<h2>Problem / Opportunity</h2>
 					<ul>
 						<li>250,000 audio and video files starting in 1920's stored in digitised system</li>
 						<li>Video stored in proprietary format.</li>
 						<li>System was full. No ability to archive new content</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>Problem / Opportunity</h2>
+					<ul>
 						<li>Metadata was still being added</li>
 						<li>Many systems for metadata. Some 36+ years old.</li>
+						<li>8-12 weeks to learn to search, FQM.</li>
 						<li>2 week turnaround for content.</li>
 					</ul>
 				</section>
@@ -57,10 +64,17 @@
 					<ul>
 						<li>Search across everything</li>
 						<li>Have a "future resistant" archive.</li>
-						<li>Merge metadata into golden records</li>
+						<li>Merge metadata into golden records. (Customer)</li>
+					</ul>
+				</section>
+
+				<section>
+					<h2>The Goal</h2>
+					<ul>
 						<li>Self serve.</li>
 						<li>Turn off old services</li>
 						<li>Be production ready in 6 months</li>
+						<li>+10 PB total data (?) eventually... (Disks, Tape etc..)</li>
 					</ul>
 				</section>
 
@@ -73,7 +87,6 @@
 						<li>React/Typescript</li>
 						<li>No choice of language. Go.</li>
 						<li>O365 for Authentication.</li>
-						<li>RDS.</li>
 					</ul>
 				</section>
 
@@ -86,13 +99,14 @@
 					<h2>Choices</h2>
 					<ul>
 						<li>3 AZ ECS cluster</li>
-						<li>2 R type instances per AZ.</li>
+						<li>2 R-type instances per AZ. (Memory)</li>
 						<li>Elastic search for search + cache.</li>
-						<li>SQS / Step functions.</li>
+						<li>SQS / Step functions?</li>
 						<li>RDS.</li>
-						<li>Public/Private?</li>
-						<li>V4 Signed Upload 500 GB files!</li>
+						<li>Public / Private?</li>
+						<li>V4 Signed Upload 700 GB files!</li>
 						<li>Landing Bucket.</li>
+						<li>Glacier</li>
 					</ul>
 				</section>
 
@@ -103,9 +117,9 @@
 				</section>
 
 				<section>
-					<h2>Resilient Design.</h2>
+					<h2>Resilient Design</h2>
 
-					<p>Gracefully degrade.</p>
+					<p>Degrade Gracefully.</p>
 					<dl>
 						<dt>S3</dt>
 						<dd>Unable to add/edit records or download/view</dd>
@@ -127,7 +141,7 @@
 					<ul>
 						<li>Choice of instance types limited</li>
 						<li>No scaling or monitoring work done for you</li>
-						<li>Forces you to snapshot even if you use it as a cache/search only solution!!</li>
+						<li>Forces you to snapshot even if you use it as a cache/search only solution!! (Day)</li>
 						<li>Multi AZ limited</li>
 						<li>Tended to have issues under load.</li>
 					</ul>
@@ -138,7 +152,7 @@
 					<ul>
 						<li>Query syntax <code>"melbourne~1 -melbourne"</code></li>
 						<li>Performance</li>
-						<li>Power users requested VERY complex queries</li>
+						<li>Power users requested VERY complex queries (FQM)</li>
 						<li>Resilience</li>
 					</ul>
 				</section>
@@ -204,6 +218,7 @@
 						<li>Image Resize, watermark.</li>
 						<li>Many one off jobs.</li>
 						<li>Lambda?</li>
+						<li>Go memory usage a massive win.</li>
 					</ul>
 				</section>
 
@@ -234,10 +249,10 @@ for _, sqsmsg := range messages.Messages {
 					<h2>Clipping</h2>
 					<img src="./img/2.png" style="border: none;" />
 					<ul>
-						<li>mediainfo, ffmpeg (mxf, mov, mp4)</li>
+						<li>mediainfo, ffmpeg (mxf, mov, mp4).</li>
 						<li>Disk caching/issue.</li>
 						<li><a href="https://boyter.org/posts/media-clipping-using-ffmpeg-with-cache-eviction-2-random-for-disk-caching-at-scale/">2 random eviction (woo!)</a></li>
-						<li>AWS Transcode?</li>
+						<li>AWS Transcode? Speed/Cost.</li>
 					</ul>
 				</section>
 
@@ -245,6 +260,12 @@ for _, sqsmsg := range messages.Messages {
 					<h2>Clipping In Action</h2>
 					<p>Network bound. T3 burstable network really helps!!</p>
 					<img src="./img/3.png" style="border: none;" />
+				</section>
+
+
+				<section>
+					<h2>Glacier</h2>
+					<p>Annoying when many can request. Store in DB and on event update all matches. Expire after 24 hours. Hard to predict expiration.</p>
 				</section>
 
 				<section>
@@ -310,11 +331,16 @@ for _, sqsmsg := range messages.Messages {
 						<li>40 TB of audio data in S3</li>
 						<li>16,000 images</li>
 						<li>~327 days of video watching</li>
-						<li>Transcode overload.</li>
-						<li>Some joker... 700 GB videos in one hour.</li>
+						<li>Some joker... 60x700 GB videos in one hour.</li>
 						<li>Importing other systems.</li>
 						<li>On time + budget!</li>
 					</ul>
+				</section>
+
+				<section>
+					<h2>Thank You!</h2>
+
+					<p>Presentation located at <a href="https://boyter.org/static/aws-go-archive-presso/">https://boyter.org/static/aws-go-archive-presso/</a> or just go to boyter.org and I will link it up tomorrow.</p>
 				</section>
 
 			</div>
